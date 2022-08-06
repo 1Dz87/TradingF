@@ -89,7 +89,7 @@ public class CurrencyPair {
                 ", open=" + open +
                 ", high=" + high +
                 ", low=" + low +
-                ", crice=" + price +
+                ", price=" + price +
                 ", symbol='" + symbol + '\'' +
                 ", tm=" + time +
                 '}';
