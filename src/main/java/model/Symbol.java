@@ -1,14 +1,12 @@
 package model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-
 public class Symbol {
 
     private int id;
 
     private String name;
 
-    private String symbol;
+    private String symbol; // USD/EUR
 
     public int getId() {
         return id;

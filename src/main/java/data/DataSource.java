@@ -14,8 +14,10 @@ import model.Symbol;
 import model.history.History;
 import model.history.Period;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class DataSource {
 
@@ -30,6 +32,7 @@ public class DataSource {
 
     /**
      * Получить текущий курс пары валют по числовому id
+     *
      * @param id - числовой id пары валют
      * @return текущий курс пары валют
      */
@@ -45,6 +48,7 @@ public class DataSource {
     /**
      * Получить текущий курс пары валют по символьному выражению пары,
      * обёрнутому в объект Symbol. (Пример объекта: Symbol s = new Symbol(); s.setSymbol("USD/EUR");)
+     *
      * @param symbol - символьное выражение пары валют
      * @return текущий курс пары валю
      */
@@ -73,6 +77,7 @@ public class DataSource {
      * Получить историю изменений пары валют за последний #length период времени.
      * Период времени рассчитывается, как #length.concat(#period)
      * Возможные величины (1m,5m,15m,30m,1h,2h,4h,5h,1d,1w,month)
+     *
      * @param symbol - симввольное выражение пары валют
      * @param length - числовое выражения периода времени
      * @param period - указание размера временного отрезка, указанного в #length. От минуты до месяца (@see model.history.Period).
@@ -81,11 +86,25 @@ public class DataSource {
      */
     public Collection<History> getHistory(final Symbol symbol, final int length, final Period period) {
         try {
-            return objectMapper.readValue(connection.get(Method.HISTORY, List.of(symbol.getSymbol(), period.toPattern(length))).body(), HistoryResponseBody.class)
+            return objectMapper.readValue(
+                    connection.get(Method.HISTORY, List.of(symbol.getSymbol(), period.toPattern(length))).body(),
+                    HistoryResponseBody.class)
                     .getResponse()
                     .values();
         } catch (JsonProcessingException e) {
             throw new ConnectionException(e.getMessage(), e);
         }
+    }
+
+    public Stream<String> getCurrencyNames() {
+        return getSymbolsList()
+                .stream()
+                // Сначала имеем Stream<Symbol>
+                // Тут объект Symbol делится на 2 строки (Прим. USD/EUR -> "USD", "EUR")
+                // Эти 2 строки преобразуются в массив через метод split()
+                // В итоге получаем Stream<List<String>>, который методом flatMap()
+                // преобразуется в Stream<String>
+                .flatMap(pair -> Arrays.stream(pair.getSymbol().split("/").clone()))
+                .distinct();
     }
 }
